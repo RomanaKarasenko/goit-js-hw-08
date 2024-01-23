@@ -66,53 +66,70 @@ const images = [
 
 const galleryContainer = document.querySelector(".gallery");
 
-const galleryItemsHTML = images
-  .map(
-    (image) => `
-  <li class="gallery-item">
-    <a class="gallery-link" href="${image.original}">
-      <img
-        class="gallery-image"
-        src="${image.preview}"
-        data-source="${image.original}"
-        alt="${image.description}"
-      />
-    </a>
-  </li>
-`
-  )
-  .join("");
+/* Крок 1: створюємо розмітку */
 
-galleryContainer.innerHTML = galleryItemsHTML;
+function galleryTemplate(images) {
+  const result = images
+    .map(
+      (image) => `
+      <li class="gallery-item">
+        <a class="gallery-link" href="${image.original}">
+          <img
+            class="gallery-image"
+            src="${image.preview}"
+            width="360px"
+            data-source="${image.original}"
+            alt="${image.description}"
+          />
+        </a>
+      </li>
+    `
+    )
+    .join("\n");
+
+  galleryContainer.innerHTML = result;
+}
+
+galleryTemplate(images);
+
+/* Крок 2: додаємо слухача подій */
 
 galleryContainer.addEventListener("click", (event) => {
   event.preventDefault();
-  const target = event.target;
-
-  const isGalleryImage = target.classList.contains("gallery-image");
-
-  if (isGalleryImage) {
-    const largeImageUrl = target.dataset.source;
-
-    const instance = basicLightbox.create(`
-      <div style="background-image: url('${largeImageUrl}'); background-size: contain; background-repeat: no-repeat; background-position: center center; width: 800px; height: 600px;"></div>
-    `);
-
-    instance.show();
-
-    const closeLightbox = () => {
-      instance.close();
-      document.removeEventListener('keydown', handleKeyPress);
-    };
-
-    const handleKeyPress = (event) => {
-      if (event.key === 'Escape') {
-        closeLightbox();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyPress);
-
-    instance.element().addEventListener('click', closeLightbox);
-  }
+  if (event.target === event.currentTarget) return;
+  const liElem = event.target.closest(".gallery-item");
+  const dataSource = liElem.querySelector(".gallery-image").dataset.source;
+  const image = images.find((el) => el.original === dataSource);
+  modal(image);
 });
+
+/* Крок 3: модальне вікно, робота з бібліотекою basicLightbox */
+
+function modal(image) {
+  const modal = basicLightbox.create(
+    `
+      <img
+        class="gallery-image"
+        src="${image.original}"
+        data-source="${image.original}"
+        alt="${image.description}"
+      />
+    `,
+    {
+      onShow: (instance) => {
+        document.addEventListener("keydown", onModalClose);
+      },
+      onClose: (instance) => {
+        document.removeEventListener("keydown", onModalClose);
+      },
+    }
+  );
+
+  modal.show();
+
+  function onModalClose(event) {
+    if (event.code === "Escape") {
+      modal.close();
+    }
+  }
+}

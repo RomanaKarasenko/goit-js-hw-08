@@ -37,17 +37,10 @@ body {
   height: 200px;
 }
 .gallery-link::after {
-  content: "👆";
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 2em;
-  fill: #4e75ff; /* Змінили color на fill */
   opacity: 0;
   transition: opacity 0.3s ease;
-}
-
-.gallery-link:hover::after {
-  opacity: 1;
 }
